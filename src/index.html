@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>DTUploader</title>
+
+  </head>
+  <body>
+    <main>
+      <h1>Drafting Template Issue Uploader</h1>
+      <div id="control-container">
+        <div id="token-input-container">
+          <va-text-input id="gh-token-input" label="Enter your Github token" id="token-input" type="text">
+        </div>
+        <div>
+          <div id="token-transmit">
+            <va-button id="transmit-button" text="add token" />
+          </div>
+          <div id="update-token-container">
+            <va-button id="choose-file-button" text="choose file" />
+          </div>
+        </div>
+      </div>
+      
+      <div id="loading-container" class="hide-container">
+        <va-loading-indicator
+        label="Please stand by"
+        message="Uploading tickets..."
+        set-focus />
+      </div>
+      <div id="upload-results-container" class="hide-container">
+        <div id="token-update"></div>
+        <div id="bad-creds"></div>
+        <div id="upload-ok"></div>
+        <div id="failed-issues"></div>
+        <div id="parse-error"></div>
+        <div id="no-token"></div>
+      </div>
+    </main>
+    <!-- <script type="module" src="/src/renderer.ts"></script> -->
+  </body>
+</html>

@@ -1,0 +1,47 @@
+body {
+  font-family: Bitter, Georgia, Cambria, Times New Roman, Times, serif;
+  /* margin: auto; */
+  /* max-width: 38rem; */
+  /* padding: 2rem; */
+}
+
+#control-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+#control-container > div {
+  display: flex;
+  align-items: flex-end;
+}
+
+#token-input-container {
+  width: 425px;
+}
+
+#token-input-container va-text-input {
+  width: 100%;
+}
+
+.show-container {
+  display: block;
+}
+
+.hide-container {
+  display: none;
+}
+
+
+#upload-results-container {
+  margin-top: 25px;
+}
+
+#upload-results-container div {
+  margin-bottom: 10px;
+}
+
+#upload-results-container ul {
+  padding: 0px 10px;
+  margin: 10px 0px;
+}
