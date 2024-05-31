@@ -4494,13 +4494,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.encrypt = void 0;
 const promises_1 = __importDefault(__webpack_require__(/*! fs/promises */ "fs/promises"));
+const path_1 = __importDefault(__webpack_require__(/*! path */ "path"));
 const electron_1 = __webpack_require__(/*! electron */ "electron");
 function encrypt(token) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = { tokenSaveOk: true };
         try {
             const encryptedToken = electron_1.safeStorage.encryptString(token);
-            yield promises_1.default.writeFile('src/token.txt', encryptedToken.toString('base64'), 'utf-8');
+            const filepath = path_1.default.join(electron_1.app.getPath('userData'), 'token.txt');
+            yield promises_1.default.writeFile(filepath, encryptedToken.toString('base64'), 'utf-8');
         }
         catch (_a) {
             result.tokenSaveOk = false;
@@ -4606,7 +4608,7 @@ electron_1.ipcMain.on('show-open-file-dialog', (event) => {
 const showFileOpenDialog = (browserWindow) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield electron_1.dialog.showOpenDialog(browserWindow, {
         properties: ['openFile'],
-        filters: [{ name: 'CSV file', extensions: ['csv'] }]
+        filters: [{ name: 'CSV file', extensions: ['csv', 'CSV'] }]
     });
     if (result.canceled) {
         browserWindow.webContents.send('upload-canceled');
@@ -4827,6 +4829,7 @@ exports.parseLabels = exports.getIndices = exports.getAxiosInstance = void 0;
 const axios_1 = __importDefault(__webpack_require__(/*! axios */ "./node_modules/axios/dist/node/axios.cjs"));
 const electron_1 = __webpack_require__(/*! electron */ "electron");
 const promises_1 = __importDefault(__webpack_require__(/*! fs/promises */ "fs/promises"));
+const path_1 = __importDefault(__webpack_require__(/*! path */ "path"));
 const COLS = ['title', 'body', 'assignee', 'labels', 'milestone'];
 function getAxiosInstance() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -4835,7 +4838,8 @@ function getAxiosInstance() {
             noToken: false
         };
         try {
-            const encryptedToken = yield promises_1.default.readFile('src/token.txt', 'utf-8');
+            const filepath = path_1.default.join(electron_1.app.getPath('userData'), 'token.txt');
+            const encryptedToken = yield promises_1.default.readFile(filepath, 'utf-8');
             const buffer = Buffer.from(encryptedToken, "base64");
             const token = electron_1.safeStorage.decryptString(buffer);
             const instance = axios_1.default.create({
@@ -11253,11 +11257,6 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
-/************************************************************************/
-/******/ 	/* webpack/runtime/compat */
-/******/ 	
-/******/ 	if (typeof __webpack_require__ !== 'undefined') __webpack_require__.ab = __dirname + "/native_modules/";
 /******/ 	
 /************************************************************************/
 /******/ 	

@@ -1,6 +1,8 @@
 import axios, { AxiosInstance } from 'axios'
-import { safeStorage } from 'electron';
+import { safeStorage, app } from 'electron';
 import fsPromises from 'fs/promises'
+import path from 'path';
+
 const COLS = ['title', 'body', 'assignee', 'labels', 'milestone'];
 
 export type ColIndices = {
@@ -18,7 +20,8 @@ export async function getAxiosInstance(): Promise<AxiosType> {
     noToken: false
   }
   try {
-    const encryptedToken = await fsPromises.readFile('src/token.txt', 'utf-8');
+    const filepath = path.join(app.getPath('userData'), 'token.txt');
+    const encryptedToken = await fsPromises.readFile(filepath, 'utf-8');
     const buffer = Buffer.from(encryptedToken, "base64");
     const token = safeStorage.decryptString(buffer);
     const instance = axios.create({
