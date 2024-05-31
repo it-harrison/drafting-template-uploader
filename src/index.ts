@@ -85,7 +85,7 @@ ipcMain.on('show-open-file-dialog', (event) => {
 const showFileOpenDialog = async (browserWindow: BrowserWindow) => {
   const result = await dialog.showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'CSV file', extensions: ['csv']}]
+    filters: [{ name: 'CSV file', extensions: ['csv', 'CSV']}]
   })
 
   if (result.canceled) {
