@@ -78,13 +78,13 @@ ipcMain.on('store-token', async (event, token) => {
   browserWindow.webContents.send('token-updated', result);
 })
 
-ipcMain.on('show-open-file-dialog', (event) => {
+ipcMain.on('show-open-file-dialog', (event, dst: boolean) => {
   const browserWindow = BrowserWindow.fromWebContents(event.sender);
   if (!browserWindow) return;
-  showFileOpenDialog(browserWindow);
+  showFileOpenDialog(browserWindow, dst);
 });
 
-const showFileOpenDialog = async (browserWindow: BrowserWindow) => {
+const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) => {
   const result = await dialog.showOpenDialog(browserWindow, {
     properties: ['openFile'],
     filters: [{ name: 'CSV file', extensions: ['csv', 'CSV']}]
@@ -96,7 +96,7 @@ const showFileOpenDialog = async (browserWindow: BrowserWindow) => {
 
   const [filepath] = result.filePaths;
 
-  const uploadResult = await handleUpload(filepath);
+  const uploadResult = await handleUpload(filepath, dst);
   browserWindow.webContents.send('upload-done', uploadResult);
 }
 

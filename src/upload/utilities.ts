@@ -14,18 +14,20 @@ export type AxiosType = {
   noToken: boolean
 }
 
-export async function getAxiosInstance(): Promise<AxiosType> {
+export async function getAxiosInstance(dst: boolean): Promise<AxiosType> {
   const result: AxiosType = {
     axiosInstance: null,
     noToken: false
   }
   try {
+    const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
+    const baseURL = `https://api.github.com/repos/department-of-veterans-affairs/${repo}/issues`;
     const filepath = path.join(app.getPath('userData'), 'token.txt');
     const encryptedToken = await fsPromises.readFile(filepath, 'utf-8');
     const buffer = Buffer.from(encryptedToken, "base64");
     const token = safeStorage.decryptString(buffer);
     const instance = axios.create({
-      baseURL: 'https://api.github.com/repos/department-of-veterans-affairs/va.gov-team/issues',
+      baseURL,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',

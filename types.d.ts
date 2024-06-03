@@ -1,6 +1,6 @@
 declare interface Window {
   api: {
-    showOpenDialog: () => void;
+    showOpenDialog: (dst: boolean) => void;
     transmitToken: (token: string) => void;
   }
 }

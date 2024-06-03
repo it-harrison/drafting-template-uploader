@@ -4601,13 +4601,13 @@ electron_1.ipcMain.on('store-token', (event, token) => __awaiter(void 0, void 0,
     const browserWindow = electron_1.BrowserWindow.fromWebContents(event.sender);
     browserWindow.webContents.send('token-updated', result);
 }));
-electron_1.ipcMain.on('show-open-file-dialog', (event) => {
+electron_1.ipcMain.on('show-open-file-dialog', (event, dst) => {
     const browserWindow = electron_1.BrowserWindow.fromWebContents(event.sender);
     if (!browserWindow)
         return;
-    showFileOpenDialog(browserWindow);
+    showFileOpenDialog(browserWindow, dst);
 });
-const showFileOpenDialog = (browserWindow) => __awaiter(void 0, void 0, void 0, function* () {
+const showFileOpenDialog = (browserWindow, dst) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield electron_1.dialog.showOpenDialog(browserWindow, {
         properties: ['openFile'],
         filters: [{ name: 'CSV file', extensions: ['csv', 'CSV'] }]
@@ -4616,7 +4616,7 @@ const showFileOpenDialog = (browserWindow) => __awaiter(void 0, void 0, void 0, 
         browserWindow.webContents.send('upload-canceled');
     }
     const [filepath] = result.filePaths;
-    const uploadResult = yield (0, upload_1.handleUpload)(filepath);
+    const uploadResult = yield (0, upload_1.handleUpload)(filepath, dst);
     browserWindow.webContents.send('upload-done', uploadResult);
 });
 // In this file you can include the rest of your app's specific main process
@@ -4646,14 +4646,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handleUpload = void 0;
 const parse_1 = __webpack_require__(/*! ./parse */ "./src/upload/parse.ts");
 const tickets_1 = __webpack_require__(/*! ./tickets */ "./src/upload/tickets.ts");
-function handleUpload(filepath) {
+function handleUpload(filepath, dst) {
     return __awaiter(this, void 0, void 0, function* () {
         const { parseOk, tickets } = yield (0, parse_1.parseFile)(filepath);
         let result = {
             parseOk
         };
         if (parseOk) {
-            const createIssuesResult = yield (0, tickets_1.createIssues)(tickets);
+            const createIssuesResult = yield (0, tickets_1.createIssues)(tickets, dst);
             result = Object.assign(Object.assign({}, createIssuesResult), result);
         }
         return result;
@@ -4752,11 +4752,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createIssues = void 0;
 const utilities_1 = __webpack_require__(/*! ./utilities */ "./src/upload/utilities.ts");
 let _axiosInstance = null;
-function createIssues(tickets) {
+function createIssues(tickets, dst) {
     return __awaiter(this, void 0, void 0, function* () {
         const [headers, ...rows] = tickets;
         const indices = (0, utilities_1.getIndices)(headers);
-        const { axiosInstance, noToken } = yield (0, utilities_1.getAxiosInstance)();
+        const { axiosInstance, noToken } = yield (0, utilities_1.getAxiosInstance)(dst);
         if (axiosInstance === null) {
             // could not load token so cannot hit api
             return {
@@ -4770,7 +4770,7 @@ function createIssues(tickets) {
             failedIssues: [],
             badcreds: false,
         };
-        // trade parallelization for greater reliability
+        // trade parallelization for reliability
         for (const row of rows) {
             yield createIssue(row, indices, errorData);
         }
@@ -4833,19 +4833,21 @@ const electron_1 = __webpack_require__(/*! electron */ "electron");
 const promises_1 = __importDefault(__webpack_require__(/*! fs/promises */ "fs/promises"));
 const path_1 = __importDefault(__webpack_require__(/*! path */ "path"));
 const COLS = ['title', 'body', 'assignee', 'labels', 'milestone'];
-function getAxiosInstance() {
+function getAxiosInstance(dst) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = {
             axiosInstance: null,
             noToken: false
         };
         try {
+            const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
+            const baseURL = `https://api.github.com/repos/department-of-veterans-affairs/${repo}/issues`;
             const filepath = path_1.default.join(electron_1.app.getPath('userData'), 'token.txt');
             const encryptedToken = yield promises_1.default.readFile(filepath, 'utf-8');
             const buffer = Buffer.from(encryptedToken, "base64");
             const token = electron_1.safeStorage.decryptString(buffer);
             const instance = axios_1.default.create({
-                baseURL: 'https://api.github.com/repos/department-of-veterans-affairs/va.gov-team/issues',
+                baseURL,
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -11259,11 +11261,6 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
-/************************************************************************/
-/******/ 	/* webpack/runtime/compat */
-/******/ 	
-/******/ 	if (typeof __webpack_require__ !== 'undefined') __webpack_require__.ab = __dirname + "/native_modules/";
 /******/ 	
 /************************************************************************/
 /******/ 	

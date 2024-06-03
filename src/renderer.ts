@@ -34,13 +34,14 @@ import {
 
 defineCustomElements();
 
-import { tokenUIResponse, clearPreviousResults, showContainer } from "./functions";
+import { tokenUIResponse, clearPreviousResults, showContainer, hideContainer } from "./functions";
 
 document.getElementById('choose-file-button').addEventListener('click', () => {
   clearPreviousResults();
   // show loading indicator
   showContainer('loading-container');
-  window.api.showOpenDialog();
+  const dst = document.getElementById('dst') as HTMLInputElement;
+  window.api.showOpenDialog(dst.checked);
 });
 
 // when user clicks the button the token is sent to backend if it is not empty string
@@ -53,10 +54,11 @@ transmitButton.addEventListener('click', () => {
 
   const { value: token } = inputEl;
   // hide the token input and transmit to backend if not empty string
-
   if (token) {
     inputEl.value = '';
     tokenUIResponse(!!token);
     window.api.transmitToken(token);
+  } else {
+    hideContainer('loading-container');
   }
 });

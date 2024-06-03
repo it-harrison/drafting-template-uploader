@@ -21,12 +21,13 @@ type ErrorData = {
 let _axiosInstance: AxiosInstance | null = null;
 
 export async function createIssues(
-  tickets: string[][]
+  tickets: string[][],
+  dst: boolean
 ): Promise<CreateIssuesResult> {
   const [headers, ...rows] = tickets;
   const indices = getIndices(headers);
 
-  const { axiosInstance, noToken } = await getAxiosInstance();
+  const { axiosInstance, noToken } = await getAxiosInstance(dst);
   if (axiosInstance === null) {
     // could not load token so cannot hit api
     return {
@@ -41,7 +42,7 @@ export async function createIssues(
     failedIssues: [],
     badcreds: false,
   };
-  // trade parallelization for greater reliability
+  // trade parallelization for reliability
   for (const row of rows) {
     await createIssue(row, indices, errorData);
   }

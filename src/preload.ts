@@ -18,8 +18,8 @@ ipcRenderer.on('token-updated', (_, result) => {
 });
 
 contextBridge.exposeInMainWorld('api', {
-  showOpenDialog: () => {
-    ipcRenderer.send('show-open-file-dialog');
+  showOpenDialog: (dst: boolean) => {
+    ipcRenderer.send('show-open-file-dialog', dst);
   },
   transmitToken: (token: string) => {
     ipcRenderer.send('store-token', token);
