@@ -4538,6 +4538,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const electron_1 = __webpack_require__(/*! electron */ "electron");
 const promises_1 = __importDefault(__webpack_require__(/*! fs/promises */ "fs/promises"));
+const path_1 = __importDefault(__webpack_require__(/*! path */ "path"));
 const upload_1 = __webpack_require__(/*! ./upload */ "./src/upload/index.ts");
 const handleToken_1 = __webpack_require__(/*! ./handleToken */ "./src/handleToken.ts");
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -4552,7 +4553,7 @@ const createWindow = () => {
         show: false,
         resizable: false,
         webPreferences: {
-            preload: '/Users/ianharrison/Desktop/dtu/drafting-template-uploader/.webpack/renderer/main_window/preload.js',
+            preload: '/Users/ianharrison/Desktop/waycool/drafting-template-uploader/.webpack/renderer/main_window/preload.js',
         },
     });
     // and load the index.html of the app.
@@ -4571,7 +4572,8 @@ electron_1.app.on('ready', createWindow);
 electron_1.ipcMain.on('app-loaded', (event) => __awaiter(void 0, void 0, void 0, function* () {
     let isToken = true;
     try {
-        yield promises_1.default.readFile('src/token.txt');
+        const filepath = path_1.default.join(electron_1.app.getPath('userData'), 'token.txt');
+        yield promises_1.default.readFile(filepath, 'utf-8');
     }
     catch (_a) {
         isToken = false;
@@ -11257,6 +11259,11 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat */
+/******/ 	
+/******/ 	if (typeof __webpack_require__ !== 'undefined') __webpack_require__.ab = __dirname + "/native_modules/";
 /******/ 	
 /************************************************************************/
 /******/ 	
