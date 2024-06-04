@@ -4,6 +4,7 @@ import { parse } from 'csv-parse';
 type ParseResult = {
   parseOk: boolean
   tickets?: string[][]
+  error?: string | null
 }
 export async function parseFile(filepath: string): Promise<ParseResult> {
   const result: ParseResult = {
@@ -19,6 +20,7 @@ export async function parseFile(filepath: string): Promise<ParseResult> {
       result.tickets.push(ticket);
     }
   } catch (error) {
+    result.error = error.toString();
     result.parseOk = false
   }
   return result;

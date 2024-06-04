@@ -11,6 +11,7 @@ export type CreateIssuesResult = ErrorData & {
   failedIssues?: string[];
   totalCreated?: number;
   noToken?: boolean;
+  milestone?: string;
 };
 
 type ErrorData = {
@@ -50,6 +51,7 @@ export async function createIssues(
     createIssuesOk: errorData.failedIssues.length < tickets.length - 1,
     totalCreated: tickets.length - 1 - errorData.failedIssues.length,
     ...errorData,
+    milestone: tickets[1][indices.milestone]
   };
 }
 
@@ -59,13 +61,14 @@ async function createIssue(ticketData: string[], indices: ColIndices, errorData:
     const payload = getPayload(ticketData, indices)
     await _axiosInstance.post("", payload);
   } catch (error) {
-    const { response: { status, data: { message } },
+    const { response: { status, statusText, data: { message } },
     } = error;
     if (status === 401 && message === "Bad credentials") {
       errorData.badcreds = true;
     }
 
-    errorData.failedIssues.push(ticketData[indices.title]);
+    const failMessage = `${ticketData[indices.title]} - ${status}/${statusText} - ${message}`;
+    errorData.failedIssues.push(failMessage);
   }
 }
 

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import { handleUpload } from './upload'
@@ -76,7 +76,7 @@ ipcMain.on('store-token', async (event, token) => {
   const result = await encrypt(token);
   const browserWindow = BrowserWindow.fromWebContents(event.sender);
   browserWindow.webContents.send('token-updated', result);
-})
+});
 
 ipcMain.on('show-open-file-dialog', (event, dst: boolean) => {
   const browserWindow = BrowserWindow.fromWebContents(event.sender);

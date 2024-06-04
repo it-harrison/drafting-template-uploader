@@ -42,11 +42,10 @@ export function uploadUIResponse(uploadResult: any): void {
   
   // ok
   if (uploadResult.createIssuesOk) {
-    showContainer('milestone');
-    addAlert('info', '<a href="https://design.va.gov/storybook/?path=/docs/uswds-va-alert--default>See the milestone</a>', 'milestone');
     showContainer('upload-ok');
     addAlert('success', `Created ${uploadResult.totalCreated} ${isPlural(uploadResult.totalCreated)}.`, 'upload-ok');
-    failedFileList(uploadResult.failedIssues)
+    failedFileList(uploadResult.failedIssues);
+    addMilestone(uploadResult.milestone);
   } else {
     hideContainer('upload-ok');
   }
@@ -76,6 +75,12 @@ function addAlert(status: string, message: string, id: string) {
   document.getElementById(id).appendChild(alert);
 }
 
+function addMilestone(milestone: string) {
+  const code = document.getElementById('milestone').querySelector('code');
+  code.innerHTML = `https://github.com/department-of-veterans-affairs/va.gov-team/milestone/${milestone}`;
+  showContainer('milestone');
+}
+
 function getFailedMessage(list: string[]): string {
   let message = `<div>Could not create ${list.length} ${isPlural(list.length)}:</div>`;
   message += failedFileList(list);
@@ -98,6 +103,7 @@ export function clearPreviousResults() {
   for (const alert of alerts) {
     alert.remove();
   }
+  hideContainer('milestone');
 }
 
 export function tokenUpdateResponse({tokenSaveOk}: { tokenSaveOk: boolean}) {

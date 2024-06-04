@@ -62,3 +62,21 @@ transmitButton.addEventListener('click', () => {
     hideContainer('loading-container');
   }
 });
+
+const copyUrlButton = document.getElementById('copy-url');
+copyUrlButton.addEventListener('click', async () => {
+  const code = document.getElementById('milestone').querySelector('code');
+  let result;
+  let klass;
+  try {
+    await navigator.clipboard.writeText(code.innerHTML);
+    result = "url copied!";
+    klass = 'success';
+  } catch (err) {
+    klass = 'fail'
+    result = "url failed to copy.";
+  }
+  const span = document.getElementById('copy-result');
+  span.innerHTML = result;
+  span.className = klass;
+});

@@ -45,3 +45,37 @@ body {
   padding: 0px 10px;
   margin: 10px 0px;
 }
+
+#milestone .inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#copy-result.success {
+  color: darkgreen;
+}
+
+#copy-result.fail {
+  color: darkred;
+}
+
+.copy-container {
+  position: relative;
+}
+
+.div-one {
+  position: absolute;
+  top: -25px;
+}
+
+code {
+  max-width: 600px;
+  overflow-x: auto; 
+  white-space: nowrap; 
+}
+
+#milestone {
+  padding: 8px;
+  border: 1px solid gray;
+}
