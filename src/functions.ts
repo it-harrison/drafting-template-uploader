@@ -29,7 +29,7 @@ export function uploadUIResponse(uploadResult: any): void {
     hideContainer('parse-error');
   } else {
     showContainer('parse-error');
-    addAlert('error', 'File could not be parsed.', 'parse-error')
+    addAlert('error', `File could not be parsed. ${uploadResult.error}`, 'parse-error')
   }
 
   // bad creds
@@ -42,6 +42,8 @@ export function uploadUIResponse(uploadResult: any): void {
   
   // ok
   if (uploadResult.createIssuesOk) {
+    showContainer('milestone');
+    addAlert('info', '<a href="https://design.va.gov/storybook/?path=/docs/uswds-va-alert--default>See the milestone</a>', 'milestone');
     showContainer('upload-ok');
     addAlert('success', `Created ${uploadResult.totalCreated} ${isPlural(uploadResult.totalCreated)}.`, 'upload-ok');
     failedFileList(uploadResult.failedIssues)
