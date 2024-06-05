@@ -79,3 +79,8 @@ code {
   padding: 8px;
   border: 1px solid gray;
 }
+
+#sleep-timer {
+  margin-top: 10px;
+  text-align: center;
+}

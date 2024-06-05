@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import { handleUpload } from './upload'
@@ -96,7 +96,7 @@ const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) =>
 
   const [filepath] = result.filePaths;
 
-  const uploadResult = await handleUpload(filepath, dst);
+  const uploadResult = await handleUpload(filepath, dst, browserWindow);
   browserWindow.webContents.send('upload-done', uploadResult);
 }
 

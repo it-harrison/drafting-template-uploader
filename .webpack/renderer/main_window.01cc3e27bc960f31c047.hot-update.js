@@ -11,7 +11,7 @@ self["webpackHotUpdatedrafting_template_uploader"]("main_window",{},
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ /* webpack/runtime/getFullHash */
 /******/ (() => {
-/******/ 	__webpack_require__.h = () => ("928806d32f02ca3a4a72")
+/******/ 	__webpack_require__.h = () => ("1e4131d1f6d80a969dc8")
 /******/ })();
 /******/ 
 /******/ }

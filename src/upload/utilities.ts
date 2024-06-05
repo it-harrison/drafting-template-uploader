@@ -54,3 +54,7 @@ export function getIndices(cols: string[]): ColIndices {
 export function parseLabels(labelString: string): string[] {
   return labelString.split(',').filter(label => label);
 }
+
+export function sleep(time: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, time));
+}

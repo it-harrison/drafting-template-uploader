@@ -1,9 +1,12 @@
 import { AxiosInstance } from "axios";
+import { BrowserWindow } from 'electron';
+
 import {
   getIndices,
   getAxiosInstance,
   ColIndices,
-  parseLabels
+  parseLabels,
+  sleep
 } from "./utilities";
 
 export type CreateIssuesResult = ErrorData & {
@@ -21,9 +24,13 @@ type ErrorData = {
 
 let _axiosInstance: AxiosInstance | null = null;
 
+const SECONDS = 60;
+const RATE_MAX = 20;
+
 export async function createIssues(
   tickets: string[][],
-  dst: boolean
+  dst: boolean,
+  browserWindow: BrowserWindow
 ): Promise<CreateIssuesResult> {
   const [headers, ...rows] = tickets;
   const indices = getIndices(headers);
@@ -43,10 +50,18 @@ export async function createIssues(
     failedIssues: [],
     badcreds: false,
   };
+
   // trade parallelization for reliability
+  let ctr = 1;
   for (const row of rows) {
+    if (ctr % RATE_MAX === 0) {
+      browserWindow.webContents.send('sleep-start', SECONDS);
+      await sleep(SECONDS * 1000 + 1000);
+    }
     await createIssue(row, indices, errorData);
+    ctr++;
   }
+
   return {
     createIssuesOk: errorData.failedIssues.length < tickets.length - 1,
     totalCreated: tickets.length - 1 - errorData.failedIssues.length,

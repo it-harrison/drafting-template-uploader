@@ -119,3 +119,22 @@ export function tokenUpdateResponse({tokenSaveOk}: { tokenSaveOk: boolean}) {
 function isPlural(leng: number): string {
   return leng > 1 ? 'tickets' : 'ticket'
 }
+
+export function sleepTimer(seconds: number) {
+  console.log('about to show...');
+  showContainer('sleep-timer');
+  let time = 0;
+  function func() {
+    if (time >= seconds) {
+      clearInterval(interval);
+      console.log('about to hide...');
+      hideContainer('sleep-timer');
+    } else {
+      const box = document.getElementById('sleep-timer');
+      box.innerHTML = `Sleeping for ${seconds - time} - more second(s).`;
+    }
+    time++;
+  }
+  const interval = setInterval(func, 1000);
+  setInterval
+}

@@ -4553,7 +4553,7 @@ const createWindow = () => {
         show: false,
         resizable: false,
         webPreferences: {
-            preload: '/Users/ianharrison/Desktop/waycool/drafting-template-uploader/.webpack/renderer/main_window/preload.js',
+            preload: '/Users/ianharrison/Desktop/supercool/drafting-template-uploader/.webpack/renderer/main_window/preload.js',
         },
     });
     // and load the index.html of the app.
@@ -4616,7 +4616,7 @@ const showFileOpenDialog = (browserWindow, dst) => __awaiter(void 0, void 0, voi
         browserWindow.webContents.send('upload-canceled');
     }
     const [filepath] = result.filePaths;
-    const uploadResult = yield (0, upload_1.handleUpload)(filepath, dst);
+    const uploadResult = yield (0, upload_1.handleUpload)(filepath, dst, browserWindow);
     browserWindow.webContents.send('upload-done', uploadResult);
 });
 // In this file you can include the rest of your app's specific main process
@@ -4646,14 +4646,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handleUpload = void 0;
 const parse_1 = __webpack_require__(/*! ./parse */ "./src/upload/parse.ts");
 const tickets_1 = __webpack_require__(/*! ./tickets */ "./src/upload/tickets.ts");
-function handleUpload(filepath, dst) {
+function handleUpload(filepath, dst, browserWindow) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { parseOk, tickets } = yield (0, parse_1.parseFile)(filepath);
-        let result = {
-            parseOk
-        };
+        const { parseOk, error, tickets } = yield (0, parse_1.parseFile)(filepath);
+        let result = { parseOk, error };
         if (parseOk) {
-            const createIssuesResult = yield (0, tickets_1.createIssues)(tickets, dst);
+            const createIssuesResult = yield (0, tickets_1.createIssues)(tickets, dst, browserWindow);
             result = Object.assign(Object.assign({}, createIssuesResult), result);
         }
         return result;
@@ -4721,6 +4719,7 @@ function parseFile(filepath) {
             }
         }
         catch (error) {
+            result.error = error.toString();
             result.parseOk = false;
         }
         return result;
@@ -4752,7 +4751,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createIssues = void 0;
 const utilities_1 = __webpack_require__(/*! ./utilities */ "./src/upload/utilities.ts");
 let _axiosInstance = null;
-function createIssues(tickets, dst) {
+const SECONDS = 60;
+const RATE_MAX = 20;
+function createIssues(tickets, dst, browserWindow) {
     return __awaiter(this, void 0, void 0, function* () {
         const [headers, ...rows] = tickets;
         const indices = (0, utilities_1.getIndices)(headers);
@@ -4771,10 +4772,16 @@ function createIssues(tickets, dst) {
             badcreds: false,
         };
         // trade parallelization for reliability
+        let ctr = 1;
         for (const row of rows) {
+            if (ctr % RATE_MAX === 0) {
+                browserWindow.webContents.send('sleep-start', SECONDS);
+                yield (0, utilities_1.sleep)(SECONDS * 1000 + 1000);
+            }
             yield createIssue(row, indices, errorData);
+            ctr++;
         }
-        return Object.assign({ createIssuesOk: errorData.failedIssues.length < tickets.length - 1, totalCreated: tickets.length - 1 - errorData.failedIssues.length }, errorData);
+        return Object.assign(Object.assign({ createIssuesOk: errorData.failedIssues.length < tickets.length - 1, totalCreated: tickets.length - 1 - errorData.failedIssues.length }, errorData), { milestone: tickets[1][indices.milestone] });
     });
 }
 exports.createIssues = createIssues;
@@ -4785,11 +4792,12 @@ function createIssue(ticketData, indices, errorData) {
             yield _axiosInstance.post("", payload);
         }
         catch (error) {
-            const { response: { status, data: { message } }, } = error;
+            const { response: { status, statusText, data: { message } }, } = error;
             if (status === 401 && message === "Bad credentials") {
                 errorData.badcreds = true;
             }
-            errorData.failedIssues.push(ticketData[indices.title]);
+            const failMessage = `${ticketData[indices.title]} - ${status}/${statusText} - ${message}`;
+            errorData.failedIssues.push(failMessage);
         }
     });
 }
@@ -4827,7 +4835,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseLabels = exports.getIndices = exports.getAxiosInstance = void 0;
+exports.sleep = exports.parseLabels = exports.getIndices = exports.getAxiosInstance = void 0;
 const axios_1 = __importDefault(__webpack_require__(/*! axios */ "./node_modules/axios/dist/node/axios.cjs"));
 const electron_1 = __webpack_require__(/*! electron */ "electron");
 const promises_1 = __importDefault(__webpack_require__(/*! fs/promises */ "fs/promises"));
@@ -4877,6 +4885,10 @@ function parseLabels(labelString) {
     return labelString.split(',').filter(label => label);
 }
 exports.parseLabels = parseLabels;
+function sleep(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+exports.sleep = sleep;
 
 
 /***/ }),
