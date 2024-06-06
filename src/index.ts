@@ -92,6 +92,7 @@ const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) =>
 
   if (result.canceled) {
     browserWindow.webContents.send('upload-canceled');
+    return
   }
 
   const [filepath] = result.filePaths;

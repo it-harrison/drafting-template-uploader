@@ -52,13 +52,14 @@ export async function createIssues(
   };
 
   // trade parallelization for reliability
-  let ctr = 1;
+  let ctr = 0;
   for (const row of rows) {
-    if (ctr % RATE_MAX === 0) {
+    if (ctr % RATE_MAX === 0 && ctr >= RATE_MAX) {
       browserWindow.webContents.send('sleep-start', SECONDS);
       await sleep(SECONDS * 1000 + 1000);
     }
     await createIssue(row, indices, errorData);
+    browserWindow.webContents.send('upload-progress', {current: ctr + 1, total: rows.length})
     ctr++;
   }
 

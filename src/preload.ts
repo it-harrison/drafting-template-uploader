@@ -1,15 +1,20 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { ipcRenderer, contextBridge } from "electron";
-import { tokenUIResponse, uploadUIResponse, hideContainer, tokenUpdateResponse, sleepTimer } from "./functions";
+import { tokenUIResponse, uploadUIResponse, hideContainer, tokenUpdateResponse, sleepTimer, updateProgBar } from "./functions";
 
 ipcRenderer.on('upload-canceled', (_) => {
   hideContainer('loading-container');
 });
 
 ipcRenderer.on('upload-done', (_, result) => {
-  hideContainer('loading-container');
+  hideContainer('prog-bar');
   uploadUIResponse(result)
+});
+
+ipcRenderer.on('upload-progress', (_, result) => {
+  hideContainer('loading-container');
+  updateProgBar(result);
 });
 
 ipcRenderer.on('token-updated', (_, result) => {
@@ -33,6 +38,5 @@ ipcRenderer.on('token-check', (_, check) => {
 });
 
 ipcRenderer.on('sleep-start', (_, seconds) => {
-  console.log('about to sleep start...');
   sleepTimer(seconds);
 });

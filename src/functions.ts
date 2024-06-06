@@ -121,13 +121,11 @@ function isPlural(leng: number): string {
 }
 
 export function sleepTimer(seconds: number) {
-  console.log('about to show...');
   showContainer('sleep-timer');
   let time = 0;
   function func() {
     if (time >= seconds) {
       clearInterval(interval);
-      console.log('about to hide...');
       hideContainer('sleep-timer');
     } else {
       const box = document.getElementById('sleep-timer');
@@ -137,4 +135,10 @@ export function sleepTimer(seconds: number) {
   }
   const interval = setInterval(func, 1000);
   setInterval
+}
+
+export function updateProgBar({ current, total }: { current: number, total: number }) {
+  const prog = document.querySelector('#prog-bar va-progress-bar');
+  prog.setAttribute('percent', `${100 * (current / total)}`);
+  showContainer('prog-bar');
 }

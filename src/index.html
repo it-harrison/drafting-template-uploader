@@ -28,8 +28,14 @@
       <div id="loading-container" class="hide-container">
         <va-loading-indicator
         label="Please stand by"
-        message="Uploading tickets..."
+        message="Upload starting"
         set-focus />
+      </div>
+      <div id="prog-bar" class="hide-container" >
+        <div>
+          <div>Percent tickets uploaded:</div>
+          <va-progress-bar percent="55" label="upload progress" />
+        </div>
       </div>
       <div id="sleep-timer" class="hide-container" ></div>
       <div id="upload-results-container" class="hide-container">
