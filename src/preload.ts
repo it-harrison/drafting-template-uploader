@@ -8,6 +8,7 @@ ipcRenderer.on('upload-canceled', (_) => {
 });
 
 ipcRenderer.on('upload-done', (_, result) => {
+  hideContainer('loading-container');
   hideContainer('prog-bar');
   uploadUIResponse(result)
 });
