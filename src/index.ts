@@ -87,8 +87,8 @@ ipcMain.on('show-open-file-dialog', (event, dst: boolean) => {
 const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) => {
   const result = await dialog.showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'CSV file', extensions: ['csv', 'CSV']}]
-  })
+    filters: [{ name: 'CSV file', extensions: ['csv', 'CSV'] }]
+  });
 
   if (result.canceled) {
     browserWindow.webContents.send('upload-canceled');
@@ -101,5 +101,22 @@ const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) =>
   browserWindow.webContents.send('upload-done', uploadResult);
 }
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+process.on('uncaughtException', (error) => {
+  let message = `${error.message}\n${error.stack}`;
+  dialog.showErrorBox(error.name, message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  let message;
+  if (reason instanceof Error) {
+    message = reason.toString();
+  } else {
+    try {
+      message = JSON.stringify(reason);
+    } catch {
+      message = String(reason);
+    }
+  }
+
+  dialog.showErrorBox('Unhandled Promise Rejection', message);
+});
