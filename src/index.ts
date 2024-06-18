@@ -44,15 +44,19 @@ const createWindow = (): void => {
 app.on('ready', createWindow);
 
 ipcMain.on('app-loaded', async (event) => {
-  let isToken = true;
   try {
-    const filepath = path.join(app.getPath('userData'), 'token.txt');
-    await fs.readFile(filepath, 'utf-8');
-  } catch {
-    isToken = false;
+    let isToken = true;
+    try {
+      const filepath = path.join(app.getPath('userData'), 'token.txt');
+      await fs.readFile(filepath, 'utf-8');
+    } catch {
+      isToken = false;
+    }
+    const browserWindow = BrowserWindow.fromWebContents(event.sender);
+    browserWindow.webContents.send('token-check', { isToken });
+  } catch (error) {
+    handleError(error);
   }
-  const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  browserWindow.webContents.send('token-check', { isToken });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -73,50 +77,70 @@ app.on('activate', () => {
 });
 
 ipcMain.on('store-token', async (event, token) => {
-  const result = await encrypt(token);
-  const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  browserWindow.webContents.send('token-updated', result);
+  try {
+    const result = await encrypt(token);
+    const browserWindow = BrowserWindow.fromWebContents(event.sender);
+    browserWindow.webContents.send('token-updated', result);
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 ipcMain.on('show-open-file-dialog', (event, dst: boolean) => {
-  const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  if (!browserWindow) return;
-  showFileOpenDialog(browserWindow, dst);
+  try {
+    const browserWindow = BrowserWindow.fromWebContents(event.sender);
+    if (!browserWindow) return;
+    showFileOpenDialog(browserWindow, dst);
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 const showFileOpenDialog = async (browserWindow: BrowserWindow, dst: boolean) => {
-  const result = await dialog.showOpenDialog(browserWindow, {
-    properties: ['openFile'],
-    filters: [{ name: 'CSV file', extensions: ['csv', 'CSV'] }]
-  });
-
-  if (result.canceled) {
-    browserWindow.webContents.send('upload-canceled');
-    return
+  try {
+    const result = await dialog.showOpenDialog(browserWindow, {
+      properties: ['openFile'],
+      filters: [{ name: 'CSV file', extensions: ['csv', 'CSV'] }]
+    });
+  
+    if (result.canceled) {
+      browserWindow.webContents.send('upload-canceled');
+      return
+    }
+  
+    const [filepath] = result.filePaths;
+  
+    const uploadResult = await handleUpload(filepath, dst, browserWindow);
+    browserWindow.webContents.send('upload-done', uploadResult);
+  } catch (error) {
+    handleError(error);
   }
+}
 
-  const [filepath] = result.filePaths;
-
-  const uploadResult = await handleUpload(filepath, dst, browserWindow);
-  browserWindow.webContents.send('upload-done', uploadResult);
+function handleError(error: Error) {
+  let message = `${error.message}\n${error.stack}`;
+  dialog.showErrorBox(error.name, message);
 }
 
 process.on('uncaughtException', (error) => {
-  let message = `${error.message}\n${error.stack}`;
-  dialog.showErrorBox(error.name, message);
+  handleError(error);
 });
 
 process.on('unhandledRejection', (reason) => {
   let message;
+  let stack;
   if (reason instanceof Error) {
-    message = reason.toString();
+    message = reason.message;
+    stack = reason.stack;
   } else {
     try {
       message = JSON.stringify(reason);
     } catch {
       message = String(reason);
     }
+    stack = new Error().stack;
   }
 
-  dialog.showErrorBox('Unhandled Promise Rejection', message);
+  const allMessage = `${message}\n\nStack Trace:\n${stack}`; 
+  dialog.showErrorBox('Unhandled Promise Rejection', allMessage);
 });
