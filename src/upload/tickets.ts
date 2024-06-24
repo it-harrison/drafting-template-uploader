@@ -1,12 +1,13 @@
-import { AxiosInstance } from "axios";
-import { BrowserWindow } from 'electron';
+import https from 'https';
+import { BrowserWindow, net } from 'electron';
 
 import {
   getIndices,
-  getAxiosInstance,
   ColIndices,
   parseLabels,
-  sleep
+  sleep,
+  getToken,
+  TokenType
 } from "./utilities";
 
 export type CreateIssuesResult = ErrorData & {
@@ -22,8 +23,6 @@ type ErrorData = {
   badcreds?: boolean;
 };
 
-let _axiosInstance: AxiosInstance | null = null;
-
 const SECONDS = 60;
 const RATE_MAX = 20;
 
@@ -35,17 +34,15 @@ export async function createIssues(
   const [headers, ...rows] = tickets;
   const indices = getIndices(headers);
 
-  const { axiosInstance, noToken } = await getAxiosInstance(dst);
-  if (axiosInstance === null) {
-    // could not load token so cannot hit api
+  const { token }: TokenType = await getToken();
+  if (token === null) {
     return {
       createIssuesOk: false,
-      noToken
+      noToken: true
     }
   }
 
   // we can hit the api
-  _axiosInstance = axiosInstance;
   const errorData: ErrorData = {
     failedIssues: [],
     badcreds: false,
@@ -58,7 +55,7 @@ export async function createIssues(
       browserWindow.webContents.send('sleep-start', SECONDS);
       await sleep(SECONDS * 1000 + 1000);
     }
-    await createIssue(row, indices, errorData);
+    await createIssue(token, dst, row, indices, errorData);
     browserWindow.webContents.send('upload-progress', {current: ctr + 1, total: rows.length})
     ctr++;
   }
@@ -71,19 +68,19 @@ export async function createIssues(
   };
 }
 
-async function createIssue(ticketData: string[], indices: ColIndices, errorData: ErrorData
+async function createIssue(token: string, dst: boolean, ticketData: string[], indices: ColIndices, errorData: ErrorData
 ): Promise<void> {
   try {
-    const payload = getPayload(ticketData, indices)
-    await _axiosInstance.post("", payload);
+    const payload = getPayload(ticketData, indices);
+    await makereq(token, dst, payload);
   } catch (error) {
-    const { response: { status, statusText, data: { message } },
-    } = error;
-    if (status === 401 && message === "Bad credentials") {
+    const { status, message, moreInfo } = error;
+    console.log(status, message)
+    if (status === "401" && message === "Bad credentials") {
       errorData.badcreds = true;
     }
 
-    const failMessage = `${ticketData[indices.title]} - ${status}/${statusText} - ${message}`;
+    const failMessage = `${ticketData[indices.title]} - ${status}/${message} ${moreInfo}`;
     errorData.failedIssues.push(failMessage);
   }
 }
@@ -96,4 +93,97 @@ function getPayload(ticketData: string[], indices: ColIndices) {
     labels: parseLabels(ticketData[indices.labels]),
     milestone: ticketData[indices.milestone],
   };
+}
+
+function makereq(token: string, dst: boolean, payload: any): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
+    const req = net.request({
+      method: 'POST',
+      protocol: 'https:',
+      hostname: 'api.github.com',
+      port: 443,
+      path: `/repos/department-of-veterans-affairs/${repo}/issues`,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Node.js/https'
+      },
+    });
+
+  
+    req.on('response', (response) => {
+      let body = '';
+
+      response.on('data', (chunk) => {
+        body += chunk;
+      });
+
+      response.on('end', () => {
+        const parsedBody = JSON.parse(body);
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          let moreInfo = '';
+          if (parsedBody.errors && parsedBody.errors.length > 0) {
+            moreInfo = '- ' + parsedBody.errors.map(function ({ field, value, code }: any) {
+              return `problem with the ${field} field: '${value}' is ${code}`;
+            }).join('-');
+          }
+          reject({ status: parsedBody.status, message: parsedBody.message, moreInfo });
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(e);
+    });
+
+    req.write(JSON.stringify(payload));
+    req.end();
+  })
+  
+}
+
+function makeRequest(token: string, dst: boolean, payload: any): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
+
+    const options = {
+      host: 'api.github.com',
+      port: 443,
+      path: `/repos/department-of-veterans-affairs/${repo}/issues`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Node.js/https'
+      }
+    }
+  
+    const req = https.request(options, (res) => {
+      let responseBody = '';
+  
+      res.on('data', (chunk) => {
+        responseBody += chunk;
+      });
+  
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject({status: res.statusCode, message: res.statusMessage});
+        } else {
+          resolve();
+        }
+      });
+    });
+  
+    req.on('error', (e) => {
+      reject(e);
+    });
+  
+    req.write(JSON.stringify(payload));
+    req.end();
+  })
 }

@@ -11,7 +11,6 @@ export async function handleUpload(filepath: string, dst: boolean, browserWindow
   const { parseOk, error, tickets } = await parseFile(filepath);
 
   let result: UploadResult = { parseOk, error }
-  
   if (parseOk) {
     const createIssuesResult = await createIssues(tickets, dst, browserWindow);
     result = { ...createIssuesResult, ...result };
