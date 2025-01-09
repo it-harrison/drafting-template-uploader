@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import { handleUpload } from './upload'
@@ -34,6 +34,10 @@ const createWindow = (): void => {
     mainWindow.focus();
   });
 
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault();
+    shell.openExternal(url);
+  });
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
 };

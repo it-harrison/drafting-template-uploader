@@ -1,5 +1,6 @@
 import https from 'https';
 import { BrowserWindow, net } from 'electron';
+import axios from 'axios';
 
 import {
   getIndices,
@@ -68,16 +69,30 @@ export async function createIssues(
   };
 }
 
+function formatError( error: any ): string {
+  let moreInfo = '';
+  const { errors } = error.response.data;
+  if (errors && errors.length > 0) {
+    moreInfo = '- ' + errors.map(function ({ field, value, code }: any) {
+      return `problem with the ${field} field: '${value}' is ${code}`;
+    }).join('-');
+  }
+  return moreInfo;
+}
+
 async function createIssue(token: string, dst: boolean, ticketData: string[], indices: ColIndices, errorData: ErrorData
 ): Promise<void> {
   try {
     const payload = getPayload(ticketData, indices);
     await makereq(token, dst, payload);
   } catch (error) {
-    const { status, message, moreInfo } = error;
-    console.log(status, message)
+    const { status, message } = error;
     if (status === "401" && message === "Bad credentials") {
       errorData.badcreds = true;
+    }
+    let moreInfo;
+    if (status === 422) {
+      moreInfo = formatError(error);
     }
 
     const failMessage = `${ticketData[indices.title]} - ${status}/${message} ${moreInfo}`;
@@ -95,95 +110,14 @@ function getPayload(ticketData: string[], indices: ColIndices) {
   };
 }
 
-function makereq(token: string, dst: boolean, payload: any): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
-    const req = net.request({
-      method: 'POST',
-      protocol: 'https:',
-      hostname: 'api.github.com',
-      port: 443,
-      path: `/repos/department-of-veterans-affairs/${repo}/issues`,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Node.js/https'
-      },
-    });
-
-  
-    req.on('response', (response) => {
-      let body = '';
-
-      response.on('data', (chunk) => {
-        body += chunk;
-      });
-
-      response.on('end', () => {
-        const parsedBody = JSON.parse(body);
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          let moreInfo = '';
-          if (parsedBody.errors && parsedBody.errors.length > 0) {
-            moreInfo = '- ' + parsedBody.errors.map(function ({ field, value, code }: any) {
-              return `problem with the ${field} field: '${value}' is ${code}`;
-            }).join('-');
-          }
-          reject({ status: parsedBody.status, message: parsedBody.message, moreInfo });
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    req.on('error', (e) => {
-      reject(e);
-    });
-
-    req.write(JSON.stringify(payload));
-    req.end();
-  })
-  
-}
-
-function makeRequest(token: string, dst: boolean, payload: any): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
-
-    const options = {
-      host: 'api.github.com',
-      port: 443,
-      path: `/repos/department-of-veterans-affairs/${repo}/issues`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Node.js/https'
-      }
+async function makereq(token: string, dst: boolean, payload: any): Promise<void> {
+  const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
+  const URL  = `https://api.github.com/repos/department-of-veterans-affairs/${repo}/issues`;
+  await axios.post(URL, payload, { 
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
     }
-  
-    const req = https.request(options, (res) => {
-      let responseBody = '';
-  
-      res.on('data', (chunk) => {
-        responseBody += chunk;
-      });
-  
-      res.on('end', () => {
-        if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject({status: res.statusCode, message: res.statusMessage});
-        } else {
-          resolve();
-        }
-      });
-    });
-  
-    req.on('error', (e) => {
-      reject(e);
-    });
-  
-    req.write(JSON.stringify(payload));
-    req.end();
-  })
+  });
 }

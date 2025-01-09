@@ -46,6 +46,7 @@ export function uploadUIResponse(uploadResult: any): void {
     addAlert('success', `Created ${uploadResult.totalCreated} ${isPlural(uploadResult.totalCreated)}.`, 'upload-ok');
     failedFileList(uploadResult.failedIssues);
     addMilestone(uploadResult.milestone);
+    addSlackMessage(uploadResult.slackMessage);
   } else {
     hideContainer('upload-ok');
   }
@@ -76,9 +77,15 @@ function addAlert(status: string, message: string, id: string) {
 }
 
 function addMilestone(milestone: string) {
-  const code = document.getElementById('milestone').querySelector('code');
-  code.innerHTML = `https://github.com/department-of-veterans-affairs/va.gov-team/milestone/${milestone}`;
+  const anchor = `<a href="https://github.com/department-of-veterans-affairs/va.gov-team/milestone/${milestone}">Visit the milestone.</a>`;
+  addAlert('info', anchor, 'milestone');
   showContainer('milestone');
+}
+
+function addSlackMessage(message: string) {
+  const pre = document.getElementById('slack-message').querySelector('pre');
+  pre.innerHTML = message;
+  showContainer('slack-message');
 }
 
 function getFailedMessage(list: string[]): string {
@@ -134,7 +141,6 @@ export function sleepTimer(seconds: number) {
     time++;
   }
   const interval = setInterval(func, 1000);
-  setInterval
 }
 
 export function updateProgBar({ current, total }: { current: number, total: number }) {

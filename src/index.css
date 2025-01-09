@@ -41,38 +41,23 @@ body {
   margin: 10px 0px;
 }
 
-#milestone .inner {
+dialog {
+  transform: translateY(250px);
+}
+
+#slack-message pre {
+  text-wrap: wrap;
+}
+
+div.copy-slack-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: end;
 }
 
-#copy-result.success {
-  color: darkgreen;
-}
-
-#copy-result.fail {
-  color: darkred;
-}
-
-.copy-container {
-  position: relative;
-}
-
-.div-one {
-  position: absolute;
-  top: -25px;
-}
-
-code {
-  max-width: 600px;
-  overflow-x: auto; 
-  white-space: nowrap; 
-}
-
-#milestone {
-  padding: 8px;
-  border: 1px solid gray;
+div.copy-slack-dialog {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 #sleep-timer {

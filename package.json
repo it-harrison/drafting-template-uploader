@@ -1,8 +1,8 @@
 {
   "name": "drafting-template-uploader",
   "productName": "drafting-template-uploader",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "version": "1.1.0",
+  "description": "Drafting Template Issue Uploader - Internal Tool",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
@@ -43,7 +43,9 @@
   "license": "MIT",
   "dependencies": {
     "@department-of-veterans-affairs/component-library": "^42.0.0",
+    "axios": "^1.7.9",
     "csv-parse": "^5.5.6",
     "electron-squirrel-startup": "^1.0.1"
-  }
+  },
+  "packageManager": "yarn@4.5.3+sha512.3003a14012e2987072d244c720506549c1aab73ee728208f1b2580a9fd67b92d61ba6b08fe93f6dce68fd771e3af1e59a0afa28dd242dd0940d73b95fedd4e90"
 }

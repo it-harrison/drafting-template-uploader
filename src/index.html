@@ -41,15 +41,28 @@
       <div id="upload-results-container" class="hide-container">
         <div id="token-update"></div>
         <div id="bad-creds"></div>
-        <div id="milestone">
-          <div>milestone url:</div>
-            <div class="inner">
-              <code></code>
-              <div class="copy-container">
-                <div class="div-one"><span id="copy-result"></span></div>
-                <div><va-button id="copy-url" text="copy url">copy</va-button></div>
-              </div>
+        <div id="milestone"></div>
+        <div id="slack-message">
+          <va-additional-info trigger="View Slack message">
+            <pre id="slack-text"></pre>
+            <br>
+            <div class="copy-slack-container">
+              <va-button text="copy slack message" />
             </div>
+            <br/>
+            <dialog id="success-dialog">
+              Slack message copied!
+              <div class="copy-slack-dialog">
+                <va-button class="close-button" primary-alternate text="close" />
+              </div>
+            </dialog>
+            <dialog id="fail-dialog">
+              Slack message failed to copy!
+              <div class="copy-slack-dialog">
+                <va-button class="close-button" primary-alternate text="close" />
+              </div>
+            </dialog>
+          </va-additional-info>
         </div>
         <div id="upload-ok"></div>
         <div id="failed-issues"></div>

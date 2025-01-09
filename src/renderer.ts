@@ -63,20 +63,29 @@ transmitButton.addEventListener('click', () => {
   }
 });
 
-const copyUrlButton = document.getElementById('copy-url');
-copyUrlButton.addEventListener('click', async () => {
-  const code = document.getElementById('milestone').querySelector('code');
-  let result;
-  let klass;
+const copySlackButton = document.querySelector('div.copy-slack-container va-button');
+copySlackButton.addEventListener('click', handleCopy);
+async function handleCopy() {
+  const container = document.getElementById("slack-text");
+  let dialog: HTMLDialogElement;
   try {
-    await navigator.clipboard.writeText(code.innerHTML);
-    result = "url copied!";
-    klass = 'success';
+    await navigator.clipboard.writeText(container.innerHTML);
+    dialog = document.getElementById('success-dialog')as HTMLDialogElement;
   } catch (err) {
-    klass = 'fail'
-    result = "url failed to copy.";
+    dialog = document.getElementById('fail-dialog') as HTMLDialogElement;
   }
-  const span = document.getElementById('copy-result');
-  span.innerHTML = result;
-  span.className = klass;
+  if (dialog && 'showModal' in dialog) {
+    (dialog as any).showModal();
+  }
+}
+
+const dialogs = document.querySelectorAll('dialog va-button');
+Array.from(dialogs).forEach(dialog => {
+  dialog.addEventListener('click', (event) => {
+    const { target } = event;
+    const dialog = (target as HTMLElement).parentElement.parentElement as HTMLDialogElement;
+    if (dialog && 'close' in dialog) {
+      (dialog as any).close();
+    }
+  });
 });
