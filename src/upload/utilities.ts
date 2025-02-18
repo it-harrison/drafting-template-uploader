@@ -16,9 +16,9 @@ export async function getToken(): Promise<TokenType> {
   const result: TokenType = { token: null }
   try {
     const filepath = path.join(app.getPath('userData'), 'token.txt');
-    const encryptedToken = await fsPromises.readFile(filepath, 'utf-8');
-    const buffer = Buffer.from(encryptedToken, "base64");
-    const token = safeStorage.decryptString(buffer);
+    const token = await fsPromises.readFile(filepath, 'utf-8');
+    // const buffer = Buffer.from(encryptedToken, "base64");
+    // const token = safeStorage.decryptString(buffer);
     result.token = token;
   } catch (error) {
     if (error.code !== 'ENOENT') {

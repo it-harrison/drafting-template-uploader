@@ -1,5 +1,4 @@
-import https from 'https';
-import { BrowserWindow, net } from 'electron';
+import { BrowserWindow } from 'electron';
 import axios from 'axios';
 
 import {

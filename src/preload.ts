@@ -20,6 +20,7 @@ ipcRenderer.on('upload-progress', (_, result) => {
 
 ipcRenderer.on('token-updated', (_, result) => {
   hideContainer('loading-container');
+  hideContainer('slack-message');
   tokenUpdateResponse(result);
 });
 

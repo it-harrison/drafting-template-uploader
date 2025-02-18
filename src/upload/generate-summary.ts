@@ -50,8 +50,12 @@ function handleTickets(tickets: string[][]) {
 async function getTeamProdInfo(milestone: string, dst: boolean) {
   let teamProd = 'Team Name - Product Name';
   try {
-    const data = await getTickets(milestone, dst, 'CC-Request');
-    teamProd = getTeamNameAndProductName(data[0].body);
+      const ccTicket = await getTicket(milestone, dst, 'CC-Request');
+    if (ccTicket !== null) {
+      teamProd = dst
+        ? ccTicket.title.replace(/staging review/i, '')
+        : getTeamNameAndProductName(ccTicket.body);
+    }
   } catch (error) {
     // let fail
   }
@@ -62,8 +66,8 @@ async function getQAInfo(milestone: string, dst: boolean) {
   let result;
   try {
     result = 'there are 0 launch-blocking issues.';
-    const data = await getTickets(milestone, dst, 'QA,launch-blocking');
-    if (data.length > 0) {
+    const qaTicket = await getTicket(milestone, dst, 'QA,launch-blocking');
+    if (qaTicket !== null) {
       result = 'there is at least 1 launch-blocking issue.';
     }
   } catch (error) {
@@ -72,7 +76,7 @@ async function getQAInfo(milestone: string, dst: boolean) {
   return result;
 }
 
-async function getTickets(milestone: string, dst: boolean, labels: string) {
+async function getTicket(milestone: string, dst: boolean, labels: string) {
   const { token }: TokenType = await getToken();
   const repo = dst ? 'vets-design-system-documentation' : 'va.gov-team';
   const URL = `https://api.github.com/repos/department-of-veterans-affairs/${repo}/issues`;
@@ -87,7 +91,10 @@ async function getTickets(milestone: string, dst: boolean, labels: string) {
       Accept: 'application/vnd.github.v3+json'
     }
   });
-  return tickets;
+  if (tickets.length > 0) {
+    return tickets[0];
+  }
+  return null;
 }
 
 export async function generateSummary(tickets: string[][], dst: boolean, milestone: string) {
